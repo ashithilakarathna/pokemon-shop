@@ -12,6 +12,7 @@ Small React gallery for twenty classic Pokémon TCG cards (Base Set), with pagin
 1. **Clone the repository** (or open this folder in your editor).
 
 2. **Install dependencies** from the project root:
+   > **Note:** You do not need to manually install or set up Vite or other tooling—this project comes pre-configured. When you run `npm install`, all required dependencies (including Vite, React, TypeScript, etc.) are installed automatically based on `package.json`. No extra global or manual setup steps are necessary.
 
    ```bash
    npm install
@@ -42,4 +43,4 @@ If you use asdf and see “No version is set for nodejs”, either run `asdf set
 - `src/pages/` — Home (gallery + pagination) and About
 - `src/components/` — Layout, card grid, pagination
 - `src/data/cards.ts` — Static card list and image URLs
-- `documents/plan/` — Product / architecture notes
+- `documentations/` — Product / architecture notes

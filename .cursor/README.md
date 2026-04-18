@@ -10,4 +10,4 @@ This folder holds **team-shared** Cursor settings for this repository.
 | [`skills/`](skills/) | [Agent Skills](https://cursor.com/docs/context/skills)—each skill is a folder with `SKILL.md` (optional). |
 | [`commands/`](commands/) | Slash commands as `.md` files (optional). |
 
-Add your own agents under `agents/*.md`. See `agents/example-agent.md` for the minimal shape.
+Add your own agents under `agents/*.md`. This repo includes **`agents/project-core.md`** (overview, stack, patterns) and **`agents/quality-agent.md`** (testing pyramid; `documentations/testing-pyramid-plan.md`).
