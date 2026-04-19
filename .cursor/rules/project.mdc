@@ -8,3 +8,4 @@ alwaysApply: true
 - **Stack:** Vite, React 19, TypeScript, React Router. Styling: global CSS in `src/index.css` (design tokens on `:root`).
 - **Structure:** Pages in `src/pages/`, shared UI in `src/components/` (`layout/`, `cards/`), static card data in `src/data/`, pagination helpers in `src/lib/`.
 - **Conventions:** Prefer small presentational components; keep `cards.ts` free of React imports. Match existing naming (BEM-like classes, `PokéCards` branding).
+- **Tests:** **Vitest**; colocate unit tests as `*.test.ts` / `*.test.tsx` next to sources. Canonical `Card` contract: `src/data/cardSchema.ts` (`CardSchema`, `safeParseCard`).
