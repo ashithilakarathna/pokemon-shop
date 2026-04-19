@@ -41,6 +41,25 @@ If you use asdf and see “No version is set for nodejs”, either run `asdf set
 | `npm run build` | Typecheck and produce a production build in `dist/` |
 | `npm run preview` | Serve the `dist/` build locally (run after `npm run build`) |
 | `npm run lint` | Run ESLint on the project |
+| `npm run playwright:install` | Download **Chromium** for Playwright (run once after `npm install`; used by E2E and aligns with `@playwright/test`) |
+| `npm run test:e2e` | **Playwright** smoke tests under `e2e/` (starts preview via `playwright.config.ts` unless you already serve `http://127.0.0.1:5173`) |
+| `npm run test:e2e:ui` | Playwright **UI mode** for debugging specs |
+
+**E2E vs MCP:** Checked-in Playwright specs are the **CI source of truth**. [Playwright MCP](https://github.com/microsoft/playwright-mcp) in Cursor (see `.cursor/mcp.json`) is for interactive exploration and locator tuning—promote stable checks into `e2e/*.spec.ts`. Use the same base URL as the dev server: `http://127.0.0.1:5173`.
+
+After a normal `npm run playwright:install`, run:
+
+```bash
+npm run test:e2e
+```
+
+If install keeps failing, try:
+
+```bash
+PW_USE_SYSTEM_CHROME=1 npm run test:e2e
+```
+
+That uses Google Chrome from your machine instead of the downloaded Chromium (see `playwright.config.ts`). If `playwright:install` fails with TLS errors (e.g. `unable to get local issuer certificate`), fix your Node or corporate proxy cert setup, or rely on the command above when Chrome is installed.
 
 ## Project layout
 
@@ -48,3 +67,4 @@ If you use asdf and see “No version is set for nodejs”, either run `asdf set
 - `src/components/` — Layout, card grid, pagination
 - `src/data/cards.ts` — Static card list and image URLs
 - `documentations/` — Product / architecture notes
+- `e2e/` — Playwright end-to-end smoke tests (see `documentations/testing-pyramid-plan.md`)

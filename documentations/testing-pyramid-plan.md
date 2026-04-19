@@ -1,6 +1,6 @@
 ---
 name: Testing pyramid plan
-overview: "Define a testing pyramid for the PokéCards Vite + React app: heavy unit coverage on pure logic and minimal data-contract checks, focused component/integration tests for routing and UI behavior, and a thin E2E smoke layer using Playwright. E2E authoring and exploration use the Playwright MCP in Cursor. The repo currently has no test runner ([package.json](package.json)); the plan names tooling and concrete cases by layer."
+overview: "Define a testing pyramid for the PokéCards Vite + React app: heavy unit coverage on pure logic and minimal data-contract checks, focused component/integration tests (Vitest + RTL + MemoryRouter), and a thin E2E smoke layer using Playwright with Playwright-native BDD-style structure. E2E exploration uses Playwright MCP in Cursor; CI remains authoritative on checked-in specs. The plan names tooling and concrete cases by layer."
 todos:
   - id: add-vitest-rtl
     content: Add Vitest, jsdom, @testing-library/react, vitest.config; npm scripts test / test:watch
@@ -15,7 +15,7 @@ todos:
     content: RTL + MemoryRouter tests for Home pagination, Layout nav, About, wildcard redirect
     status: pending
   - id: e2e-playwright
-    content: Add Playwright, webServer preview, 3–5 smoke e2e specs; configure Playwright MCP in Cursor for interactive E2E
+    content: "Add @playwright/test, playwright.config.ts (baseURL + webServer preview on 127.0.0.1:5173), e2e/*.spec.ts in Playwright-native BDD shape (nested test.describe Feature/Scenario, e2e/support/bdd.ts given/when/then helpers), scripts test:e2e; align browser install with @playwright/test; Playwright MCP in .cursor/mcp.json for interactive work"
     status: pending
   - id: ci-test-scripts
     content: Wire CI (e.g. GitHub Actions) to run lint, test, and optionally e2e
@@ -55,13 +55,13 @@ flowchart TB
 |-------|-----------|-----------|
 | Unit + integration | **Vitest** + **@vitejs/plugin-react** (already present) + **jsdom** + **@testing-library/react** | Native Vite integration, fast watch mode. |
 | Contract (minimal) | Same as unit (**Vitest**); optional **Zod** if you want a single schema source | No separate Pact broker or HTTP mocks in v1. |
-| E2E | **Playwright** only | Checked-in `e2e/*.spec.ts`, `playwright.config.ts`, `webServer` for `preview` or dev URL; CI runs `npx playwright test`. |
+| E2E | **Playwright** (`@playwright/test`) only | Checked-in `e2e/*.spec.ts`, `playwright.config.ts`, `webServer` for `preview` (or dev URL); CI runs `npx playwright test`. Structure tests as **Playwright-native BDD** (see Layer 3)—not Gherkin unless you opt in later. |
 
-Add scripts in [package.json](package.json): e.g. `test`, `test:watch`, `test:e2e` (and optionally `test:e2e:ui`).
+Add scripts in [package.json](package.json): e.g. `test`, `test:watch`, `test:e2e` (and optionally `test:e2e:ui`), plus a single canonical **`playwright install`** path tied to `@playwright/test` after it is added (avoid conflicting Playwright versions with `@playwright/mcp`).
 
 ### Playwright MCP (Cursor)
 
-Use the **[Playwright MCP](https://github.com/microsoft/playwright-mcp)** server in Cursor for **interactive** E2E work: drive a real browser from the agent, reproduce steps, capture selectors, and debug flakiness **without** replacing the committed Playwright test suite.
+Use the **[Playwright MCP](https://github.com/microsoft/playwright-mcp)** server in Cursor for **interactive** E2E work: drive a real browser from the agent, reproduce steps, capture selectors, and debug flakiness **without** replacing the committed Playwright test suite. **BDD-style E2E scenarios, `webServer` / `baseURL`, locator strategy, and CI** for Playwright are spelled out under **Layer 3** below.
 
 | Concern | Playwright MCP | Playwright test files (`e2e/`) |
 |---------|----------------|----------------------------------|
@@ -155,28 +155,70 @@ Use **Vitest + jsdom + React Testing Library** with **`MemoryRouter`** (and opti
 
 ## Layer 3 — E2E tests (top, smallest set)
 
-**Runner:** **Playwright** (mandatory for this project).
+**Runner:** **`@playwright/test`** (mandatory for this project). This layer is intentionally **small** (about **3–5** smoke scenarios to start).
 
-**Setup:** Start app once per CI job (`npm run build && npm run preview` with fixed port, or `vite dev` in background); `baseURL` in Playwright config (align host with [`vite.config.ts`](vite.config.ts) `server.host`, e.g. `http://127.0.0.1:5173`).
+### Setup and config
 
-**Playwright MCP:** Enable in Cursor **Settings → MCP** (add the Playwright MCP server per upstream docs). Use it to explore flows and validate locators; **promote** stable checks into `e2e/*.spec.ts` so CI stays authoritative.
+- Start the app once per CI job via **`webServer`** in `playwright.config.ts`, e.g. `npm run build && npm run preview` with **fixed host and port** aligned to [`vite.config.ts`](vite.config.ts) (`server.host` **`127.0.0.1`**, `port` **`5173`**).
+- Set Playwright **`use.baseURL`** to **`http://127.0.0.1:5173`** so `page.goto('/')` matches local dev and MCP sessions.
+- Recommended `webServer` behavior: **`reuseExistingServer: !process.env.CI`** so local runs can attach to an already-running dev server; CI always starts a fresh preview.
+- Optional quality knobs: `fullyParallel: true`, `retries` on CI, `use: { trace: 'on-first-retry' }`. Verify **`vite preview` CLI flags** for host/port against the repo’s Vite major version when wiring `webServer.command`.
 
-**Flows (3–5 tests max to start)**
+### BDD format (Playwright-native, no Gherkin)
 
-1. Open home → see “Featured cards” (or main heading) and at least one card image loads (or network idle for document).
-2. Pagination: Next → page indicator updates; Previous returns.
-3. Open About via header nav → About content visible; follow link back to gallery.
-4. Optional: direct navigation to `/about` and back with browser history.
+Use **nested `test.describe`** blocks with **Feature** / **Scenario**-style titles (readable strings), and optional thin helpers under **`e2e/support/`** named **`given*`**, **`when*`**, **`then*`** (or similar) only where they improve clarity—**not** separate `.feature` files unless you explicitly adopt Cucumber/playwright-bdd later.
 
-Avoid asserting on third-party image CDN pixel-perfect; assert DOM structure and navigation instead.
+**Suggested primary spec file:** `e2e/poke-cards.smoke.spec.ts` containing all smoke scenarios so the suite stays thin; split into multiple `*.spec.ts` files only if the E2E layer grows.
+
+### Playwright MCP vs checked-in E2E (reminder)
+
+Project MCP config: [`.cursor/mcp.json`](../.cursor/mcp.json); onboarding notes: [`.cursor/README.md`](../.cursor/README.md). Keep the **same `baseURL`** as `playwright.config.ts` when exploring in MCP so locators match CI. The comparison table (**MCP vs `e2e/`**) lives under **Recommended toolchain** above.
+
+```mermaid
+flowchart LR
+  subgraph ciLayer [CI / npm run test:e2e]
+    pwConfig[playwright.config.ts]
+    webServer[webServer preview]
+    specs[e2e/*.spec.ts]
+    support[e2e/support helpers]
+  end
+  subgraph mcpLayer [Cursor Playwright MCP]
+    mcpJson[.cursor/mcp.json]
+    explore[Same baseURL exploration]
+  end
+  pwConfig --> webServer
+  pwConfig --> specs
+  specs --> support
+  explore -.->|promote locators| specs
+```
+
+### Recommended scenarios (BDD titles → behavior)
+
+Map each scenario to a nested **`test.describe('Feature: …')`** + **`test('Scenario: …')`** (or equivalent naming).
+
+| # | Feature / scenario (title) | Behavior to assert |
+|---|----------------------------|-------------------|
+| 1 | **Feature:** Gallery home — **Scenario:** visitor sees the featured gallery | Open `/`; expect main heading **“Featured cards”**; expect at least one **card** in the grid (e.g. `article` or image with accessible name tied to a card). Do **not** depend on CDN image bytes or pixel-perfect rendering. |
+| 2 | **Feature:** Pagination — **Scenario:** visitor moves between pages and controls disable correctly | Assert **“Page 1 of 2”** (or pagination `navigation` **“Card pages”**); click **Next**; expect second page content (e.g. first card on page 2 is **Nidoking** per [`src/data/cards.ts`](src/data/cards.ts)); **Next** disabled on last page; **Previous** returns to page 1; **Previous** disabled on page 1. |
+| 3 | **Feature:** About — **Scenario:** visitor opens About from the header and returns to the gallery | Click header **“About us”**; expect **“About us”** heading; click **“← Back to the gallery”**; expect **“Featured cards”** again. |
+| 4 | **Feature:** About — **Scenario:** deep link and browser history *(optional)* | `page.goto('/about')`; expect About; `page.goBack()`; expect gallery home. Use to reach the **up to 5** smoke cap only if worth the maintenance. |
+
+**Locator strategy:** Prefer **roles and accessible names** consistent with integration tests ([`src/App.integration.test.tsx`](../src/App.integration.test.tsx), [`src/pages/Home.integration.test.tsx`](../src/pages/Home.integration.test.tsx)) and [`src/components/Pagination.tsx`](../src/components/Pagination.tsx) (`aria-label` on pagination). Assert **DOM structure and navigation**, not third-party CDN reliability.
+
+### Dependencies and scripts
+
+- Add **`@playwright/test`** as a devDependency; add **`test:e2e`** and optionally **`test:e2e:ui`** to [package.json](../package.json).
+- **Browser install:** Prefer **`npx playwright install`** (or `playwright install chromium`) from the **`@playwright/test`**-aligned CLI once that package is present, and document one canonical install path. [`@playwright/mcp`](../package.json) may bring its own `playwright` version—**align or document** so local MCP + CI E2E do not fight over mismatched browsers.
 
 ---
 
 ## Non-functional / quality gates
 
 - Run **unit + integration** on every PR (`npm test` in CI).
-- Run **E2E** on main or nightly if cost is a concern; otherwise on PR with cache.
+- Run **E2E** on main or nightly if cost is a concern; otherwise **on PR with browser cache** once the suite is stable (recommended default: PR gate after a few green runs).
+- Optional **GitHub Actions** job: `npm ci` → `npx playwright install chromium` → `npm run test:e2e` (and reuse Playwright browser cache between runs).
 - Keep **ESLint** ([`npm run lint`](package.json)) in CI; optionally add **`typescript-eslint` test file patterns** when tests live under `src/**/*.test.ts(x)` or `tests/**`.
+- Document **`npm run test:e2e`**, **`playwright install`**, and **MCP vs CI** briefly in [README.md](../README.md) once E2E lands.
 
 ---
 
@@ -188,10 +230,13 @@ Avoid asserting on third-party image CDN pixel-perfect; assert DOM structure and
 | `src/lib/pagination.test.ts` | Unit tests |
 | `src/data/cardContract.test.ts` (or `src/lib/validateCard.test.ts`) | Contract / shape tests + `CARDS` sweep |
 | `src/data/validateCard.ts` or `cardSchema.ts` (optional) | Single place for mandatory vs optional rules |
-| `src/pages/Home.test.tsx` | Integration |
-| `src/App.test.tsx` or `src/test/router.tsx` | Route integration |
-| `e2e/*.spec.ts` | Playwright specs |
-| `playwright.config.ts` | Browsers, `webServer` command |
+| `src/pages/Home.integration.test.tsx` (or `*.test.tsx`) | Integration (example naming in repo) |
+| `src/App.integration.test.tsx`, `src/test/renderWithApp.tsx` | Route integration helpers |
+| `e2e/poke-cards.smoke.spec.ts` | Playwright smoke specs (BDD-style `test.describe`) |
+| `e2e/support/bdd.ts` | Optional `given*` / `when*` / `then*` helpers |
+| `e2e/*.spec.ts` | Additional Playwright specs if the suite grows |
+| `playwright.config.ts` | Browsers, `baseURL`, `webServer` |
+| `.cursor/mcp.json` | Playwright MCP server entry for Cursor (interactive only) |
 
 ---
 
