@@ -34,6 +34,10 @@ If you use asdf and see “No version is set for nodejs”, either run `asdf set
 
 | Command | Description |
 |---------|-------------|
+| `npm run test` | Unit tests (**Vitest**); JSON report under `.vitest/report.json` (includes run duration) |
+| `npm run test:watch` | Vitest watch mode |
+| `npm run test:coverage` | Unit tests plus **v8** coverage (`coverage/` — HTML + `coverage-summary.json`) |
+| `npm run test:report` | `vitest run` with JSON report written to `.vitest/report.json` |
 | `npm run build` | Typecheck and produce a production build in `dist/` |
 | `npm run preview` | Serve the `dist/` build locally (run after `npm run build`) |
 | `npm run lint` | Run ESLint on the project |

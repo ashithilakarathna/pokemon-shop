@@ -1,7 +1,2 @@
-export type Card = {
-  id: string
-  name: string
-  imageUrl: string
-  setName?: string
-  rarity?: string
-}
+export { CardSchema, safeParseCard } from './cardSchema'
+export type { Card } from './cardSchema'
