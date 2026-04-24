@@ -34,6 +34,10 @@ You are a **project-core** assistant for this repository. Prefer facts from the 
 - **`src/lib/`** — pure helpers (e.g. `pagination.ts`) with no JSX.
 - **Routing** — nested routes under `/` with `Layout` + `Outlet`; unknown paths redirect home (`App.tsx`).
 
+## Test-driven development (Layer 1)
+
+For **Layer 1** in `documentations/testing-pyramid-plan.md` — **pure logic** in `src/lib/` and **static data / contract** work in `src/data/` — follow `.cursor/rules/tdd.mdc`: **failing test first** (red), **smallest change that passes** (green), then **refactor** with tests still green. Colocate Vitest files as `*.test.ts` / `*.test.tsx` next to the module, matching `.cursor/rules/project.mdc`. For integration and E2E layers, delegate or cross-read **`quality-agent`**.
+
 ## Rules aligned with quality-agent (General rules)
 
 These mirror **quality-agent** lines 11–12 so core and testing guidance stay consistent:

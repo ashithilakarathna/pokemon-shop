@@ -1,0 +1,34 @@
+---
+description: TDD for testing pyramid Layer 1 — Vitest, pure logic and data contract
+alwaysApply: true
+---
+
+# TDD — Layer 1 (unit) only
+
+Follow **test-driven development** for **Layer 1** in `documentations/testing-pyramid-plan.md`. **Layer 2 (RTL + router)** and **Layer 3 (Playwright)** are not covered here; they will be added in a follow-up revision.
+
+## In scope
+
+- **Pure logic** under `src/lib/` (e.g. pagination helpers).
+- **Static data and contract** under `src/data/`, with **`CardSchema` / `safeParseCard`** in `src/data/cardSchema.ts` as the canonical shape — reuse in tests; do not maintain a parallel field list only in comments.
+
+## Out of scope (this rule)
+
+- Component and routing tests using `@testing-library/react` / `MemoryRouter`.
+- Browser E2E and Playwright MCP sessions.
+
+## Red → green → refactor
+
+1. **Red** — Add or extend a **failing** Vitest test in a colocated `*.test.ts` (or `*.test.tsx` only if the unit under test truly requires it) **before** the production code reflects the new behavior. The failure must demonstrate the missing or wrong behavior.
+2. **Green** — Implement the **smallest** change that makes the test pass. Avoid extra API surface or branches not required by current tests.
+3. **Refactor** — Improve structure and names with tests green. If the observable contract changes, update tests first (return to red).
+
+## Conventions
+
+- **Vitest** for this layer; **offline** tests only — no live network fetches (e.g. TCG image CDNs) in unit tests.
+- Cover **positive and negative** cases for logic; for schema/contract, include invalid input paths consistent with `safeParseCard` / `CardSchema` usage.
+- Prefer **minimal fixtures** over full `CARDS` unless the behavior under test depends on list size or real entries.
+
+## Spikes
+
+Short exploratory code is acceptable when discovery is required; before merge, **Layer 1 behavior must be covered by tests** aligned to the final design. Call out spike-to-TDD in the PR when relevant.
