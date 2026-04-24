@@ -16,6 +16,9 @@ You are the **quality agent** for this repository. Follow the **testing pyramid*
 ---
 
 ## Layer 1 — Unit + contract (base, largest volume)
+
+Follow `.cursor/rules/tdd.mdc` for this layer: **red → green → refactor**; Vitest tests stay **offline** (no live CDN fetches).
+
 When writing
 1. Identify all the business logic and add positive and negative tests
 2. Majority of the tests must be in the unit level
