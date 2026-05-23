@@ -13,6 +13,27 @@ You are the **quality agent** for this repository. Follow the **testing pyramid*
 - After adding tests, ensure `npm run test` (when configured), `npm run test:e2e` / Playwright (when configured), and `npm run lint` stay green.
 - **Playwright MCP:** Prefer the same **base URL** and host as `playwright.config.ts` / `vite.config.ts` (e.g. `http://127.0.0.1:5173`) so MCP-driven exploration matches local and CI runs.
 
+## Test scenario comments (all layers)
+
+**Every** automated test case—Layer 1 unit/contract, Layer 2 integration (Vitest + RTL), and Layer 3 Playwright E2E—must have a **block comment immediately above** the test (`it`, `test`, or nested `test` inside `describe`).
+
+1. **Source:** Tie the comment to the acceptance scenario in `documentations/requirements/` when one exists; otherwise state the behavior under test in the same Given / When / Then shape.
+2. **Format** (match existing repo examples: `src/lib/gallerySearch.test.ts`, `src/pages/Home.integration.test.tsx`):
+
+```ts
+// Scenario: <title from requirement or short behavior name>
+// Given <precondition>
+// When <action or input>
+// Then <expected outcome>
+it('…', () => { … })
+```
+
+3. **Scenario Outline examples:** Name the example row (e.g. `zard → name substring`, `BASE → set name substring`).
+4. **Implementation-only tests** (no direct requirement line): prefix with `// Implementation:` and still use Given / When / Then so reviewers see intent.
+5. **Playwright E2E:** Same rule on each `test('…', …)` or BDD step group—reference the user-facing flow, not only the selector.
+
+Do not rely on the test title alone; the comment is the traceability link to product requirements.
+
 ---
 
 ## Layer 1 — Unit + contract (base, largest volume)
