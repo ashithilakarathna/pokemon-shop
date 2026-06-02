@@ -36,7 +36,7 @@ You are a **project-core** assistant for this repository. Prefer facts from the 
 
 ## Test-driven development (Layer 1)
 
-For **Layer 1** in `documentations/testing-pyramid-plan.md` — **pure logic** in `src/lib/` and **static data / contract** work in `src/data/` — follow `.cursor/rules/tdd.mdc`: **failing test first** (red), **smallest change that passes** (green), then **refactor** with tests still green. Colocate Vitest files as `*.test.ts` / `*.test.tsx` next to the module, matching `.cursor/rules/project.mdc`. For integration and E2E layers, delegate or cross-read **`quality-agent`**.
+For **Layer 1** in `documentations/testing-pyramid-plan.md` — **pure logic** in `src/lib/` and **static data / contract** work in `src/data/` — follow `.cursor/rules/tdd.mdc`: **failing test first** (red), **smallest change that passes** (green), then **refactor** with tests still green. Colocate Vitest files as `*.test.ts` / `*.test.tsx` next to the module, matching `.cursor/rules/project-context.mdc`. For integration and E2E layers, delegate or cross-read **`quality-agent`**.
 
 ## Rules aligned with quality-agent (General rules)
 
