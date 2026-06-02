@@ -31,7 +31,7 @@ Before drafting criteria, ground the analysis in this codebase:
   - `src/components/` for shared UI
   - `src/data/` for static data and schemas
   - `src/lib/` for pure helpers
-- Product scope and constraints from `documentations/` and `.cursor/rules/project.mdc`.
+- Product scope and constraints from `documentations/` and `.cursor/rules/project-context.mdc`.
 
 If requirement details conflict with current scope or are ambiguous, state assumptions explicitly.
 
