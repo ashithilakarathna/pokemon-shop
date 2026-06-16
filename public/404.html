@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PokéCards — Redirecting</title>
+    <script>
+      ;(() => {
+        const basePath = '/pokemon-shop/'
+        const path = window.location.pathname.replace(basePath, '')
+        window.location.replace(`${basePath}?/${path}`)
+      })()
+    </script>
+  </head>
+  <body>
+    Redirecting to PokéCards...
+  </body>
+</html>

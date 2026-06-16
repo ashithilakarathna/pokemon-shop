@@ -4,6 +4,15 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      ;(() => {
+        const redirectPrefix = '?/'
+        if (window.location.search.startsWith(redirectPrefix)) {
+          const route = window.location.search.slice(redirectPrefix.length)
+          window.history.replaceState(null, '', `/pokemon-shop/${route}`)
+        }
+      })()
+    </script>
     <title>PokéCards — Base Set gallery</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
